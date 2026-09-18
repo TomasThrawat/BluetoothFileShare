@@ -253,7 +253,7 @@ class MainActivity : Activity() {
                     socket.connect()
                 }
 
-                DataOutputStream(BufferedOutputStream(socket.outputStream, 64 * 1024)).use { data ->
+                DataOutputStream(BufferedOutputStream(socket.outputStream, 4 * 1024 * 1024)).use { data ->
                     val name = getName(uri).ifBlank { "file" }.take(255).toByteArray(Charsets.UTF_8)
                     val size = getFileSize(uri)
                     data.writeInt(name.size)
@@ -261,7 +261,7 @@ class MainActivity : Activity() {
                     data.writeLong(size)
 
                     contentResolver.openInputStream(uri)?.use { input ->
-                        val buffer = ByteArray(256 * 1024)
+                        val buffer = ByteArray(1024 * 1024)
                         var sent = 0L
                         var lastUiUpdate = 0L
                         while (true) {
@@ -314,7 +314,7 @@ class MainActivity : Activity() {
                 server.close()
                 receiverServer = null
 
-                val input = DataInputStream(BufferedInputStream(socket.inputStream, 64 * 1024))
+                val input = DataInputStream(BufferedInputStream(socket.inputStream, 4 * 1024 * 1024))
                 val nameLength = input.readInt()
                 if (nameLength !in 1..255) throw IOException("Invalid file name")
 
@@ -340,7 +340,7 @@ class MainActivity : Activity() {
 
                 try {
                     contentResolver.openOutputStream(outUri)?.use { output ->
-                        val buffer = ByteArray(256 * 1024)
+                        val buffer = ByteArray(1024 * 1024)
                         var received = 0L
                         if (size >= 0) {
                             var remaining = size
