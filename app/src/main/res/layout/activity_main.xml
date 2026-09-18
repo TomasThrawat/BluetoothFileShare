@@ -48,21 +48,18 @@
                     android:textStyle="bold" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/selectFileButton"
-                    style="@style/Widget.Material3.Button.Filled"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:text="Select file to send" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/receiveButton"
-                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="Receive files" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/pairButton"
-                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
