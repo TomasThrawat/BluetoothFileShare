@@ -253,7 +253,7 @@ class MainActivity : Activity() {
                     socket.connect()
                 }
 
-                DataOutputStream(BufferedOutputStream(socket.outputStream, 64 * 1024)).use { data ->
+                DataOutputStream(BufferedOutputStream(socket.outputStream, 256 * 1024)).use { data ->
                     val name = getName(uri).ifBlank { "file" }.take(255).toByteArray(Charsets.UTF_8)
                     val size = getFileSize(uri)
                     data.writeInt(name.size)
@@ -276,6 +276,9 @@ class MainActivity : Activity() {
                         }
                     } ?: throw IOException("Cannot open selected file")
                     data.flush()
+                    runOnUiThread {
+                        status.text = if (size > 0) \"Sending \" + (size / 1024) + \" KB / \" + (size / 1024) + \" KB\" else \"Sending completed\"
+                    }
                 }
 
                 runOnUiThread {
