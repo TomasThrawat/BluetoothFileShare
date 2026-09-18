@@ -253,7 +253,7 @@ class MainActivity : Activity() {
                     socket.connect()
                 }
 
-                DataOutputStream(BufferedOutputStream(socket.outputStream, 256 * 1024)).use { data ->
+                DataOutputStream(BufferedOutputStream(socket.outputStream, 64 * 1024)).use { data ->
                     val name = getName(uri).ifBlank { "file" }.take(255).toByteArray(Charsets.UTF_8)
                     val size = getFileSize(uri)
                     data.writeInt(name.size)
@@ -261,13 +261,17 @@ class MainActivity : Activity() {
                     data.writeLong(size)
 
                     contentResolver.openInputStream(uri)?.use { input ->
-                        val buffer = ByteArray(64 * 1024)
+                        val buffer = ByteArray(256 * 1024)
                         var sent = 0L
+                        var lastUiUpdate = 0L
                         while (true) {
                             val count = input.read(buffer)
                             if (count < 0) break
                             data.write(buffer, 0, count)
                             sent += count
+                            val now = android.os.SystemClock.elapsedRealtime()
+                            if (now - lastUiUpdate < 250L) continue
+                            lastUiUpdate = now
                             val progress = if (size > 0)
                                 "Sending " + (sent / 1024) + " KB / " + (size / 1024) + " KB"
                             else
@@ -276,9 +280,6 @@ class MainActivity : Activity() {
                         }
                     } ?: throw IOException("Cannot open selected file")
                     data.flush()
-                    runOnUiThread {
-                        status.text = if (size > 0) \"Sending \" + (size / 1024) + \" KB / \" + (size / 1024) + \" KB\" else \"Sending completed\"
-                    }
                 }
 
                 runOnUiThread {
@@ -339,7 +340,7 @@ class MainActivity : Activity() {
 
                 try {
                     contentResolver.openOutputStream(outUri)?.use { output ->
-                        val buffer = ByteArray(64 * 1024)
+                        val buffer = ByteArray(256 * 1024)
                         var received = 0L
                         if (size >= 0) {
                             var remaining = size
