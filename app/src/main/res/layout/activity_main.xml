@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="?attr/colorSurface">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,14 +13,12 @@
         android:paddingEnd="20dp"
         android:paddingTop="24dp"
         android:paddingBottom="28dp">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Bluetooth File Share"
             android:textAppearance="?attr/textAppearanceHeadlineMedium"
             android:textStyle="bold" />
-
         <TextView
             android:id="@+id/status"
             android:layout_width="match_parent"
@@ -30,7 +27,6 @@
             android:text="Ready"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant" />
-
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,55 +35,40 @@
             app:cardElevation="0dp"
             app:strokeWidth="1dp"
             app:strokeColor="?attr/colorOutline">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="18dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Quick actions"
                     android:textAppearance="?attr/textAppearanceTitleLarge"
                     android:textStyle="bold" />
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/selectFileButton"
                     style="@style/Widget.Material3.Button.Filled"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="Select file to send"
-                    app:icon="@drawable/ic_file"
-                    app:iconGravity="textStart"
-                    app:iconPadding="10dp" />
-
+                    android:text="Select file to send" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/receiveButton"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Receive files"
-                    app:icon="@drawable/ic_download"
-                    app:iconGravity="textStart"
-                    app:iconPadding="10dp" />
-
+                    android:text="Receive files" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/pairButton"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Pair a device"
-                    app:icon="@drawable/ic_bluetooth"
-                    app:iconGravity="textStart"
-                    app:iconPadding="10dp" />
+                    android:text="Pair a device" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,7 +76,6 @@
             android:text="Paired devices"
             android:textAppearance="?attr/textAppearanceTitleLarge"
             android:textStyle="bold" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -103,21 +83,18 @@
             android:text="Tap a device to send the selected file."
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant" />
-
         <LinearLayout
             android:id="@+id/deviceList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="vertical" />
-
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             app:cardCornerRadius="20dp"
             app:cardElevation="0dp">
-
             <TextView
                 android:id="@+id/selectedFile"
                 android:layout_width="match_parent"
@@ -126,6 +103,5 @@
                 android:text="No file selected"
                 android:textAppearance="?attr/textAppearanceBodyLarge" />
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
 </ScrollView>
