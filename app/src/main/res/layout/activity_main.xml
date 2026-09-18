@@ -64,6 +64,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Pair a device" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/searchButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Search for nearby phones" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
         <TextView

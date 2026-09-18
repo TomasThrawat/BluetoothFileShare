@@ -8,6 +8,8 @@ import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.content.ContentValues
 import android.content.Intent
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -40,6 +42,7 @@ class MainActivity : Activity() {
     private lateinit var selectedFile: TextView
     private var fileUri: Uri? = null
     private var adapter: BluetoothAdapter? = null
+    private val discoveredDevices = linkedMapOf<String, BluetoothDevice>()
     private var receiverServer: BluetoothServerSocket? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +55,21 @@ class MainActivity : Activity() {
 
         findViewById<Button>(R.id.pairButton).setOnClickListener {
             startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        }
+
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.searchButton).setOnClickListener {
+            startDeviceDiscovery()
+        }
+
+        val filter = IntentFilter().apply {
+            addAction(BluetoothDevice.ACTION_FOUND)
+            addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(discoveryReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(discoveryReceiver, filter)
         }
         findViewById<Button>(R.id.selectFileButton).setOnClickListener {
             startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -101,12 +119,88 @@ class MainActivity : Activity() {
             return
         }
 
-        status.text = "Select a paired device to send."
+        status.text = if (discoveredDevices.isEmpty()) {
+            "Select a paired device, or search for nearby phones."
+        } else {
+            "Nearby phones found: ${discoveredDevices.size}. Tap a device to send."
+        }
+
         bonded.sortedBy { it.name ?: it.address }.forEach { device ->
-            val button = Button(this)
-            button.text = device.name ?: device.address
-            button.setOnClickListener { sendSelectedFile(device) }
-            deviceList.addView(button, ViewGroup.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addDeviceButton(device, "Paired")
+        }
+
+        discoveredDevices.values
+            .filterNot { found -> bonded.any { it.address == found.address } }
+            .sortedBy { it.name ?: it.address }
+            .forEach { device -> addDeviceButton(device, "Nearby") }
+    }
+
+    private fun addDeviceButton(device: BluetoothDevice, label: String) {
+        val button = com.google.android.material.button.MaterialButton(this)
+        button.text = "$label • ${device.name ?: device.address}"
+        button.setOnClickListener { sendSelectedFile(device) }
+        deviceList.addView(button, ViewGroup.LayoutParams(-1, ViewGroup.LayoutParams.WRAP_CONTENT))
+    }
+
+    private fun startDeviceDiscovery() {
+        if (!hasBtPermission()) {
+            status.text = "Bluetooth permission is required."
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ),
+                10
+            )
+            return
+        }
+
+        val bt = adapter ?: return
+        if (!bt.isEnabled) {
+            status.text = "Turn Bluetooth on first."
+            return
+        }
+
+        discoveredDevices.clear()
+        refreshDevices()
+        try {
+            bt.cancelDiscovery()
+            val started = bt.startDiscovery()
+            status.text = if (started) {
+                "Searching for nearby phones..."
+            } else {
+                "Could not start Bluetooth search."
+            }
+        } catch (e: SecurityException) {
+            status.text = "Bluetooth permission is required."
+        }
+    }
+
+    private val discoveryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context, intent: Intent) {
+            when (intent.action) {
+                BluetoothDevice.ACTION_FOUND -> {
+                    if (!hasBtPermission()) return
+                    val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    } ?: return
+                    discoveredDevices[device.address] = device
+                    refreshDevices()
+                }
+
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                    status.text = if (discoveredDevices.isEmpty()) {
+                        "No nearby phones found. Make sure the other phone is discoverable."
+                    } else {
+                        "Search finished. Nearby phones found: ${discoveredDevices.size}."
+                    }
+                    refreshDevices()
+                }
+            }
         }
     }
 
@@ -297,6 +391,8 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        try { unregisterReceiver(discoveryReceiver) } catch (_: Exception) {}
+        try { adapter?.cancelDiscovery() } catch (_: Exception) {}
         try { receiverServer?.close() } catch (_: Exception) {}
         executor.shutdownNow()
         super.onDestroy()
